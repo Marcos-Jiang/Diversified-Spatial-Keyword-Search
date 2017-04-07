@@ -11,28 +11,40 @@
 #include <string>
 #include <sstream>
 
+#include<map>
+#include<vector>
+#include<utility>
+
 
 void readCo() {
     int cunt = 0;
     std::string line;
     std::ifstream input( "../USA-road-d.BAY.co");
 
+    std::map<int, std::pair<int, int> > m;
+    std::vector<int> tokens;
+    int number;
+
     while (std::getline(input, line)) {
         if(line.find("v") != 0) continue;
         ++cunt;
+        tokens.clear();
         line.erase(0,2);
         std::istringstream ss(line);
         //std::cout << cunt << ": " << line << std::endl;
-        //std::cout << cunt << ": " << ss[1] << " " << ss[2] << ", " << ss[3] << std::endl;
-        std::cout << cunt << ": ";
-        for (int n=0; n<3; n++) {
-            int val;
-            ss >> val;
-            std::cout << val << " ";
-        }
-        std::cout << std::endl;
+        //std::cout << cunt << ": ";
+        while ( ss >> number )
+            tokens.push_back( number ); 
+        m[tokens[0]] = std::make_pair(tokens[1], tokens[2]);
+        //for (int i : tokens) {
+        //    std::cout << i << " ";
+        //}
+        //std::cout << std::endl;
         if(cunt == 10) break;
     }
+
+    for (auto it=m.begin(); it!=m.end(); ++it)
+        std::cout << it->first << " => " << it->second.first << ", " << it->second.second << '\n';
 }
 
 int main() {

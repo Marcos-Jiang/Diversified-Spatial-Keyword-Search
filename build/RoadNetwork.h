@@ -8,26 +8,47 @@
 #ifndef _ROADNETWORK_H
 #define _ROADNETWORK_H
 
-#include<vector>
-#include<pair>
+#include "Node.h"
+#include "Edge.h"
+#include "Obj.h"
+
+#include <iostream>
+#include <fstream>
 #include<memory>
+#include<string>
+#include <sstream>
+#include <algorithm>
+
+#include<map>
+#include<vector>
+#include<utility>
+
+#include "stdlib.h"
+#include<climits>
+#include<bitset>
 
 class RoadNetwork{
 public:
-    std::vector<std::unique_ptr<Node>> _nodes;
+    typedef std::shared_ptr<Node>   nPtr;
+    typedef std::shared_ptr<Edge>   ePtr;
+    typedef std::shared_ptr<Obj>    oPtr;
+
+    RoadNetwork() {};
+    void addNode(Node& n);
+    void buildNetwork(std::string coFile,
+            std::string grFile,
+            std::string objFile);
+
 private:
-    class Node {
-    public:
-        Node(const int lat, const int lon) : _nLat{lat}, _nLon{lon} {};
-        void addEdge(std::shared_ptr<Edge>& e);
-        std::vector<std::shared_ptr<Edge>>& getEdges();
-        long getDist(const Obj& obj) const;
+    void buildNode(std::string file, std::map<uint32_t, nPtr>& nodes);
+    //void buildEdge(std::string file, std::map<int, std::vector<ePtr> >& edges, std::map<int, nPtr>& nodes);
+    void buildEdge(std::string file, std::map<uint32_t, nPtr>& nodes);
+    void addObj(std::string file); 
+    std::vector<nPtr> _nodes;
 
-    private:
-        int _nLat;
-        int _nLon;
-        int _zOrder;
+    nPtr binarySearch(uint64_t zOrder);
+    const uint64_t computZorder(uint32_t lat, uint32_t lon) const;
+};
 
-        std::vector<std::shared_ptr<Edge>> _adjList;
-}
+
 #endif

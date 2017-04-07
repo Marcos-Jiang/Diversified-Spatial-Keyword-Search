@@ -1,13 +1,25 @@
-all: Test
+OBJS = RoadNetwork.o test.o Edge.o Node.o
+CC = g++
+DEBUG = -g
+#CFLAGS = -Wall -Werror -O2 -std=c++14 -fsanitize=address -c $(DEBUG)
+CFLAGS = -Wall -Werror -O2 -std=c++14 -c
+LFLAGS = -Wall $(DEBUG)
 
-Test: Test.o BuildRoadNetwork.o
-	g++-4.9 -fsanitize=address Test.o BuildRoadNetwork.o -o Test
+test : $(OBJS)
+	$(CC) $(LFLAGS) $(OBJS) -o test
 
-Test.o: Test.cpp BuildRoadNetwork.h
-	g++-4.9 -std=c++14 -Wall -Werror -O2 -fsanitize=address -c Test.cpp
-	
-BuildRoadNetwork.o: BuildRoadNetwork.cpp BuildRoadNetwork.h
-	g++-4.9 -std=c++14 -Wall -Werror -O2 -fsanitize=address -c BuildRoadNetwork.cpp
+test.o : test.cpp RoadNetwork.h Node.h Edge.h
+	$(CC) $(CFLAGS) test.cpp
+
+RoadNetwork.o : RoadNetwork.cpp RoadNetwork.h Node.h Edge.h Obj.h
+	$(CC) $(CFLAGS) RoadNetwork.cpp
+
+Edge.o : Edge.cpp Node.h Edge.h Obj.h
+	$(CC) $(CFLAGS) Edge.cpp
+
+Node.o : Node.cpp Node.h Edge.h Obj.h
+	$(CC) $(CFLAGS) Node.cpp
+
 
 clean:
-	rm *o Test
+	rm *o

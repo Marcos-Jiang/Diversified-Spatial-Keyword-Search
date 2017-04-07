@@ -9,20 +9,32 @@
 #define _OBJ_H
 
 #include<vector>
-#include<pair>
+#include"stdint.h"
+#include<utility>
 
 class Obj {
 public:
-    Obj(int lat, int lon, const std::pair<long>& dist, const std::vector<long>& terms) :
-                _oLat{lat}, _oLon{lon},
-                _oDist{dist}, _oTerms{terms} {};
-    const std::vector<long>& getTerms() const;
-    const std::pair<long>& getDist() const;
+    Obj(uint32_t lat, uint32_t lon, uint64_t zOrder,
+        const std::vector<uint32_t>& terms) :
+            _oLat{lat}, _oLon{lon}, _zOrder{zOrder},
+            _oTerms{terms} {};
+
+    Obj(uint32_t lat, uint32_t lon, uint64_t zOrder,
+        const std::pair<float, float>& dist,
+        const std::vector<uint32_t>& terms) :
+            _oLat{lat}, _oLon{lon}, _zOrder{zOrder},
+            _oDist{dist}, _oTerms{terms} {};
+
+    const std::vector<uint32_t>& getTerms() const;
+    const std::pair<float, float>& getDist() const;
+    const uint32_t getLat() const {return _oLat;};
+    const uint32_t getLon() const {return _oLon;};
 
 private:
-    int _oLat;
-    int _oLon;
-    std::pair<long, long> _oDist;
-    std::vector<long> _oTerms
-}
+    uint32_t _oLat;
+    uint32_t _oLon;
+    uint64_t _zOrder;
+    std::pair<float, float> _oDist;
+    std::vector<uint32_t> _oTerms;
+};
 #endif
