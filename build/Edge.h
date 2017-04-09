@@ -21,20 +21,22 @@ class Node;
 class Edge {
 public:
     typedef std::weak_ptr<Node>     wPtr;
-    typedef std::shared_ptr<Node>     sPtr;
+    typedef std::shared_ptr<Node>   sPtr;
+    typedef std::shared_ptr<Obj>    oPtr;
 
     Edge(sPtr n1, sPtr n2, const float dist);
     //Edge(std::shared_ptr<Node> n1, std::shared_ptr<Node> n2, const uint32_t dist);
     ~Edge(){};
-    void addObj(Obj& obj);
-    float dist2Edge(std::shared_ptr<Obj> obj) const;
+    void addObj(oPtr obj);
+    float dist2Edge(oPtr obj) const;
     const float getWeight() const {return _eWeight; };
+    const std::pair<uint32_t, uint32_t>& getMid() const {return _midPoint; };
     std::pair<wPtr, wPtr>& getEndNode() {return _endNode; };
-    std::vector<std::shared_ptr<Obj> >& getObj(const std::vector<uint32_t>& terms);
+    std::vector<oPtr>& getObj(const std::vector<uint32_t>& terms);
 
 private:
     std::pair<wPtr, wPtr> _endNode;
-    std::vector<std::shared_ptr<Obj> > _obj;
+    std::vector<oPtr > _obj;
     float _eWeight;
     std::pair<uint32_t, uint32_t> _midPoint;
 };

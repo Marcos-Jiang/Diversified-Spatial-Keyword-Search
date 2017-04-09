@@ -16,11 +16,11 @@ Edge::Edge(sPtr n1, sPtr n2, const float dist) {
     _midPoint = std::make_pair<uint32_t, uint32_t>((n1->getLat()+n2->getLat())/2, (n1->getLon()+n2->getLon())/2);
 }
 
-void Edge::addObj(Obj& obj) {
-    _obj.push_back(std::make_shared<Obj>(obj));
+void Edge::addObj(oPtr obj) {
+    _obj.push_back(obj);
 }
 
-float Edge::dist2Edge(std::shared_ptr<Obj> obj) const {
+float Edge::dist2Edge(oPtr obj) const {
     double lat1 = _midPoint.first/1000000.0;
     double lon1 = _midPoint.second/1000000.0;
     double lat2 = obj->getLat()/1000000.0;
@@ -35,7 +35,7 @@ float Edge::dist2Edge(std::shared_ptr<Obj> obj) const {
     return R * 2 * std::atan2(std::sqrt(a), std::sqrt(1-a)); 
 }
 
-std::vector<std::shared_ptr<Obj> >& Edge::getObj(const std::vector<uint32_t>& terms) {
+std::vector<Edge::oPtr>& Edge::getObj(const std::vector<uint32_t>& terms) {
     return _obj;
 }
 
