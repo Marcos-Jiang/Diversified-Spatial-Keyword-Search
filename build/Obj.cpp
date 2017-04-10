@@ -7,9 +7,9 @@
 
 #include "Obj.h"
 
-const std::vector<uint32_t> & Obj::getTerms() const {
-    return _oTerms;
-}
+//const std::vector<uint32_t> & Obj::getTerms() const {
+//    return _oTerms;
+//}
 
 
 const std::pair<float, float>& Obj::getDist() const {

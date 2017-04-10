@@ -47,10 +47,12 @@ public:
     typedef bgi::rtree<nPair, bgi::quadratic<16> > nRtree;
 
     RoadNetwork() {};
-    void addNode(Node& n);
+    //void addNode(Node& n);
     void buildNetwork(std::string coFile,
             std::string grFile,
             std::string objFile);
+
+    void qurey(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms);
 
 private:
     void buildNode(std::string file, std::map<uint32_t, nPtr>& nodes);
@@ -58,12 +60,12 @@ private:
     void addObj(std::string file); 
 
     //nPtr binarySearch(uint64_t zOrder);
-    ePtr nearestEdge(point p) {
+    ePtr nearestEdge(const point& p) {
         std::vector<ePair> result;
         _edges.query(bgi::nearest(p, 1), std::back_inserter(result));
         return result[0].second;
     };
-    nPtr nearestNode(point p) {
+    nPtr nearestNode(const point& p) {
         std::vector<nPair> result;
         _nodes.query(bgi::nearest(p, 1), std::back_inserter(result));
         return result[0].second;

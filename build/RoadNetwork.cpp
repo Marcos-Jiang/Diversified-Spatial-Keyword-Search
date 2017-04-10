@@ -6,9 +6,9 @@
  ************************************************************************/
 #include "RoadNetwork.h"
 
-void RoadNetwork::addNode(Node& n) {
-    //_nodes.push_back(std::make_shared<Node>(n));
-}
+//void RoadNetwork::addNode(Node& n) {
+//    //_nodes.push_back(std::make_shared<Node>(n));
+//}
 
 void RoadNetwork::buildNode(std::string file, std::map<uint32_t, nPtr>& nodes) {
     uint32_t cunt = 0;
@@ -47,6 +47,27 @@ void RoadNetwork::buildNode(std::string file, std::map<uint32_t, nPtr>& nodes) {
     std::cout << "#nodes: " << cunt << std::endl;
     //std::cout << "Lon: " << lonMin << " - " << lonMax << std::endl;
     //std::cout << "Lat: " << latMin << " - " << latMax << std::endl;
+}
+
+
+void RoadNetwork::qurey(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms) {
+    nPtr node = nearestNode(point(lat, lon));
+    size_t cunt = 0;
+    std::cout << "qurey: " << lat << ", " << lon << std::endl;
+    std::cout << "Node: " << node->getLat() << ", " <<
+    node->getLon() << " => " << std::endl;
+    for(auto e : node->getEdges()) {
+        std::cout << ++cunt << " => ";
+        for(auto o : e->matchObj(terms)) {
+            std::cout << o->getLat() << ", " << o->getLon() <<
+            ": ";
+            for(const uint32_t t : o->getTerms()) {
+                std::cout << t << ", ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+    }
 }
 
 //void RoadNetwork::buildEdge(std::string file, std::map<uint32_t, std::vector<ePtr> >& edges, std::map<uint32_t, nPtr>& nodes) {
@@ -101,6 +122,7 @@ void RoadNetwork::addObj(std::string file) {
         
         while(ss >> tmp) tokens.push_back(abs(tmp)); 
         size_t len = tokens.size();
+        uint32_t id = tokens[0];
         uint32_t lat = tokens[len-2];
         uint32_t lon = tokens[len-1];
         //uint64_t zOrder = computZorder(lat, lon);
@@ -109,7 +131,7 @@ void RoadNetwork::addObj(std::string file) {
         tokens.pop_back();
         tokens.pop_back();
 
-        oPtr o = std::make_shared<Obj>(Obj(lat, lon, zOrder, tokens));
+        oPtr o = std::make_shared<Obj>(Obj(id, lat, lon, zOrder, tokens));
         //nPtr n = binarySearch(zOrder);
         ePtr e = nearestEdge(point(lat, lon));
         maxDist = e->dist2Edge(o);
@@ -174,6 +196,7 @@ void RoadNetwork::buildNetwork(std::string coFile,
     //    if(++cunt == 5) break;
     //}
 
+    qurey(33025158,114523370, std::vector<uint32_t>{2,3});
 }
 
 //RoadNetwork::nPtr RoadNetwork::binarySearch(uint64_t zOrder) {

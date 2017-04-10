@@ -11,8 +11,11 @@
 #include "Obj.h"
 //#include "Node.h"
 
+#include<iostream>
 #include<vector>
+#include<map>
 #include<utility>
+#include<algorithm>
 #include<memory>
 #include<cmath>
 
@@ -23,9 +26,9 @@ public:
     typedef std::weak_ptr<Node>     wPtr;
     typedef std::shared_ptr<Node>   sPtr;
     typedef std::shared_ptr<Obj>    oPtr;
+    typedef std::vector<oPtr>::iterator    iter;
 
     Edge(sPtr n1, sPtr n2, const float dist);
-    //Edge(std::shared_ptr<Node> n1, std::shared_ptr<Node> n2, const uint32_t dist);
     ~Edge(){};
     void addObj(oPtr obj);
     float dist2Edge(oPtr obj) const;
@@ -33,12 +36,16 @@ public:
     const std::pair<uint32_t, uint32_t>& getMid() const {return _midPoint; };
     std::pair<wPtr, wPtr>& getEndNode() {return _endNode; };
     std::vector<oPtr>& getObj(const std::vector<uint32_t>& terms);
+    std::vector<oPtr> matchObj(const std::vector<uint32_t>& terms);
 
+private:
+    void buildIF();
 private:
     std::pair<wPtr, wPtr> _endNode;
     std::vector<oPtr > _obj;
     float _eWeight;
     std::pair<uint32_t, uint32_t> _midPoint;
+    std::map<uint32_t, std::vector<oPtr> > _if;
 };
 
 //double deg2rad(double deg) {

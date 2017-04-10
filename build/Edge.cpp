@@ -39,6 +39,80 @@ std::vector<Edge::oPtr>& Edge::getObj(const std::vector<uint32_t>& terms) {
     return _obj;
 }
 
+std::vector<Edge::oPtr> Edge::matchObj(const std::vector<uint32_t>& terms) {
+    std::vector<oPtr> result;
+    std::vector<std::pair<iter, iter> > candidates;
+    uint32_t curMax = 0;
+    size_t index = 0;
+    size_t len = 0;
+    
+    if(_if.size() == 0) buildIF();
+
+    for(const uint32_t t : terms) {
+        if(_if.find(t) == _if.end()) return result;    
+        candidates.push_back(std::make_pair(_if[t].begin(),
+                                            _if[t].end()));
+        ++len;
+    }
+    //std::cout << "after push candidates" << std::endl;
+    //std::cout << "len = " << len << std::endl;
+
+    if(len == 1) {
+        result.assign(candidates[0].first, candidates[0].second);
+       return result; 
+    }
+        
+
+
+    while(true) {
+        if(curMax < (*candidates[index].first)->getId()) {
+            curMax = (*candidates[index].first)->getId();
+            index = 0;
+            //std::cout << "< brunch" << std::endl;
+        }
+        else if(curMax > (*candidates[index].first)->getId()) {
+            if(++candidates[index].first ==
+               candidates[index].second) break;
+            //std::cout << "> brunch" << std::endl;
+        }
+        else {
+            if(++index == len) {
+                index = 0;
+                result.push_back(*candidates[index].first);
+                if(++candidates[index].first == 
+                        candidates[index].second) break;
+            }
+            //std::cout << "= brunch" << std::endl;
+        }
+    }
+
+    return result;
+}
+
+void Edge::buildIF() {
+    for(auto o : _obj) {
+        for(const uint32_t t : o->getTerms()) {
+            if(_if.find(t) == _if.end())
+                _if[t] = std::vector<oPtr>(); 
+            _if[t].push_back(o);
+        }
+    }
+
+    //if(_if.size() == 0) {
+    //    _if[NULL] = std::vector<oPtr>();
+    //    return;
+    //}
+    
+    for(auto key : _if) {
+        std::sort(key.second.begin(), key.second.end(),
+                 [&](oPtr o1, oPtr o2){return o1->getId() < o2->getId();});
+
+        //for(auto it : key.second) std::cout << it->getId() << " ";
+        //std::cout << std::endl;
+    }
+    //std::cout << "**** end ****" << std::endl;
+}
+
 //double Edge::deg2rad(double deg) const {
 //    return deg * (std::acos(-1)/180.0);
 //}

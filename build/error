@@ -1,3 +1,2 @@
-g++ -Wall -Werror -O2 -std=c++14 -c RoadNetwork.cpp
-g++ -Wall -Werror -O2 -std=c++14 -c test.cpp
+g++ -Wall -Werror -O2 -std=c++14 -c Edge.cpp
 g++ -Wall -g RoadNetwork.o test.o Edge.o Node.o -o test
