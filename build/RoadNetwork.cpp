@@ -49,26 +49,103 @@ void RoadNetwork::buildNode(std::string file, std::map<uint32_t, nPtr>& nodes) {
     //std::cout << "Lat: " << latMin << " - " << latMax << std::endl;
 }
 
+void RoadNetwork::searchCandidates(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms, const float& maxDist) {
+    auto comp = [](nPtr a, nPtr b) { return a->getDist() < b->getDist(); };
+    std::priority_queue<nPtr, std::vector<nPtr>, decltype(comp)> minqueue(comp);
+    std::vector<oPtr> candidates;
 
-void RoadNetwork::qurey(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms) {
     nPtr node = nearestNode(point(lat, lon));
+    node->setDist(node->dist2Node(lat, lon));
+    minqueue.push(node);
+
+    while(!minqueue.empty()) {
+        nPtr n = minqueue.top();
+        minqueue.pop();
+        std::cout << "Node: " << n->getLat() << ", " << n->getLon() << " => ";
+        std::cout << "dist = " << n->getDist() << std::endl;
+        if(n->getDist() > maxDist) break;
+        n->markNode();
+        for(ePtr e : n->getEdges()) {
+            nPtr n1 = e->getEndNode().first.lock();
+            nPtr n2 = e->getEndNode().second.lock();
+            //nPtr ni = *e->getEndNode().first == *n ? e->getEndNode().second : e->getEndNode().first;
+            nPtr ni = *n1 == *n ? n2 : n1;
+            //std::cout << "nid: " << n->getId() << " <=> "
+            //<< "niid: " << ni->getId() << std::endl;
+            if(ni->isMarked()) {
+                for(auto o : e->matchObj(terms)) {
+                    if(o->getDist()>n->getDist()+n->dist2Node(o))
+                        o->setDist(n->getDist()+n->dist2Node(o));
+                }
+            }
+            else {
+                if(ni->getDist() > e->getWeight()+n->getDist()) 
+                    ni->setDist(e->getWeight() + n->getDist());
+                for(auto o : e->matchObj(terms)) {
+                    o->setDist(n->getDist()+n->dist2Node(o));
+                    std::cout << "push" << std::endl;
+                    candidates.push_back(o);
+                }
+                minqueue.push(ni);
+            }
+        }
+    }
+
     size_t cunt = 0;
     std::cout << "qurey: " << lat << ", " << lon << std::endl;
     std::cout << "Node: " << node->getLat() << ", " <<
     node->getLon() << " => " << std::endl;
-    for(auto e : node->getEdges()) {
+    std::cout << "#candidate: " << candidates.size() <<std::endl;
+
+    for(oPtr o : candidates) {
+        //if(o->getDist()>maxDist) continue;
         std::cout << ++cunt << " => ";
-        for(auto o : e->matchObj(terms)) {
-            std::cout << o->getLat() << ", " << o->getLon() <<
-            ": ";
-            for(const uint32_t t : o->getTerms()) {
-                std::cout << t << ", ";
-            }
-            std::cout << std::endl;
-        }
+        std::cout << o->getLat() << ", " << o->getLon() << ": ";
+        for(const uint32_t t : o->getTerms()) 
+            std::cout << t << ", ";
         std::cout << std::endl;
     }
+
+
+
+    //std::cout << "qurey: " << lat << ", " << lon << std::endl;
+    //std::cout << "Node: " << node->getLat() << ", " <<
+    //node->getLon() << " => " << std::endl;
+    //for(auto e : node->getEdges()) {
+    //    std::cout << ++cunt << " => ";
+    //    for(auto o : e->matchObj(terms)) {
+    //        std::cout << o->getLat() << ", " << o->getLon() <<
+    //        ": ";
+    //        for(const uint32_t t : o->getTerms()) {
+    //            std::cout << t << ", ";
+    //        }
+    //        std::cout << std::endl;
+    //    }
+    //    std::cout << std::endl;
+    //}
 }
+
+//void RoadNetwork::query(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms) {
+//    //auto comp = [](nPtr a, nPtr b) { return a->score() < b->score(); };
+//    //priority_queue<nPtr, vector<nPtr>, decltype(comp)> minqueue(comp);
+//    nPtr node = nearestNode(point(lat, lon));
+//    size_t cunt = 0;
+//    std::cout << "qurey: " << lat << ", " << lon << std::endl;
+//    std::cout << "Node: " << node->getLat() << ", " <<
+//    node->getLon() << " => " << std::endl;
+//    for(auto e : node->getEdges()) {
+//        std::cout << ++cunt << " => ";
+//        for(auto o : e->matchObj(terms)) {
+//            std::cout << o->getLat() << ", " << o->getLon() <<
+//            ": ";
+//            for(const uint32_t t : o->getTerms()) {
+//                std::cout << t << ", ";
+//            }
+//            std::cout << std::endl;
+//        }
+//        std::cout << std::endl;
+//    }
+//}
 
 //void RoadNetwork::buildEdge(std::string file, std::map<uint32_t, std::vector<ePtr> >& edges, std::map<uint32_t, nPtr>& nodes) {
 void RoadNetwork::buildEdge(std::string file, std::map<uint32_t, nPtr>& nodes) {
@@ -196,7 +273,7 @@ void RoadNetwork::buildNetwork(std::string coFile,
     //    if(++cunt == 5) break;
     //}
 
-    qurey(33025158,114523370, std::vector<uint32_t>{2,3});
+    searchCandidates(33025158,114523370, std::vector<uint32_t>{2,3}, 10);
 }
 
 //RoadNetwork::nPtr RoadNetwork::binarySearch(uint64_t zOrder) {

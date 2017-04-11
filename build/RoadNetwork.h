@@ -25,6 +25,7 @@
 
 #include<map>
 #include<vector>
+#include<queue>
 #include<utility>
 
 #include "stdlib.h"
@@ -52,7 +53,9 @@ public:
             std::string grFile,
             std::string objFile);
 
-    void qurey(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms);
+
+    void searchCandidates(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms, const float& maxDist);
+    //void qurey(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms);
 
 private:
     void buildNode(std::string file, std::map<uint32_t, nPtr>& nodes);

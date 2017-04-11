@@ -12,6 +12,6 @@
 //}
 
 
-const std::pair<float, float>& Obj::getDist() const {
-    return _oDist;
-}
+//const std::pair<float, float>& Obj::getDist() const {
+//    return _oDist;
+//}
