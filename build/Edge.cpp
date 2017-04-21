@@ -21,10 +21,14 @@ void Edge::addObj(oPtr obj) {
 }
 
 float Edge::dist2Edge(oPtr obj) const {
+    return dist2Edge(obj->getLat(), obj->getLon());
+}
+
+float Edge::dist2Edge(uint32_t lat, uint32_t lon) const {
     double lat1 = _midPoint.first/1000000.0;
     double lon1 = _midPoint.second/1000000.0;
-    double lat2 = obj->getLat()/1000000.0;
-    double lon2 = obj->getLon()/1000000.0;
+    double lat2 = lat/1000000.0;
+    double lon2 = lon/1000000.0;
 
     double R = 6371;
     double dLat = (lat2-lat1)*(std::acos(-1)/180.0);

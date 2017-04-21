@@ -32,6 +32,7 @@ public:
     ~Edge(){};
     void addObj(oPtr obj);
     float dist2Edge(oPtr obj) const;
+    float dist2Edge(uint32_t lat, uint32_t lon) const;
     const float getWeight() const {return _eWeight; };
     const std::pair<uint32_t, uint32_t>& getMid() const {return _midPoint; };
     std::pair<wPtr, wPtr>& getEndNode() {return _endNode; };

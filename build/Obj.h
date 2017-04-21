@@ -9,6 +9,7 @@
 #define _OBJ_H
 
 #include<vector>
+#include<cmath>
 #include"stdint.h"
 #include<utility>
 
@@ -36,10 +37,18 @@ public:
     const uint32_t getId() const {return _oId;};
     const uint32_t getLat() const {return _oLat;};
     const uint32_t getLon() const {return _oLon;};
+    float dist2Obj(const Obj& other) const;
+    float dist2Obj(uint32_t lat, uint32_t lon) const;
     const float& getDist() const {return _oDist; };
     void setDist(const float& dist) {_oDist = dist; };
 
     const std::vector<uint32_t> getTerms() const {return _oTerms;};
+
+    bool operator==(const Obj &other) const;
+    bool operator!=(const Obj &other) const {
+        return !(*this == other);
+    };
+
 
 private:
     uint32_t _oId;
