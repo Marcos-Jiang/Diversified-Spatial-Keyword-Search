@@ -86,7 +86,7 @@ std::vector<RoadNetwork::oPtr> RoadNetwork::searchCandidates(uint32_t lat, uint3
         nPtr n = minqueue.top();
         minqueue.pop();
         std::cout << "Node: " << n->getLat() << ", " << n->getLon() << " => ";
-        std::cout << "dist = " << n->getDist() << std::endl;
+        std::cout << "dist = " << n->getDist() << " <=> " << n->dist2Node(lat, lon) << std::endl;
         if(n->getDist() > maxDist) break;
         n->markNode();
         for(ePtr e : n->getEdges()) {
@@ -96,6 +96,17 @@ std::vector<RoadNetwork::oPtr> RoadNetwork::searchCandidates(uint32_t lat, uint3
             nPtr ni = *n1 == *n ? n2 : n1;
             //std::cout << "nid: " << n->getId() << " <=> "
             //<< "niid: " << ni->getId() << std::endl;
+
+            if(ni->getDist() > e->getWeight()+n->getDist()) {
+                //if(ni->isMarked()) {
+                //    ni->setDist(e->getWeight() + n->getDist());
+                //    minqueue.push(ni);
+                //}
+                
+                ni->setDist(e->getWeight() + n->getDist());
+            }
+
+
             if(ni->isMarked()) {
                 for(auto o : e->matchObj(terms)) {
                     if(o->getDist()>n->getDist()+n->dist2Node(o))
@@ -103,8 +114,8 @@ std::vector<RoadNetwork::oPtr> RoadNetwork::searchCandidates(uint32_t lat, uint3
                 }
             }
             else {
-                if(ni->getDist() > e->getWeight()+n->getDist()) 
-                    ni->setDist(e->getWeight() + n->getDist());
+                //if(ni->getDist() > e->getWeight()+n->getDist()) 
+                //    ni->setDist(e->getWeight() + n->getDist());
                 for(auto o : e->matchObj(terms)) {
                     o->setDist(n->getDist()+n->dist2Node(o));
                     std::cout << "push" << std::endl;
@@ -151,21 +162,21 @@ std::vector<RoadNetwork::oPtr> RoadNetwork::searchCandidates(uint32_t lat, uint3
     return candidates;
 }
 
-void RoadNetwork::updateCP(CP& cp, oPtr o, uint32_t qLat, uint32_t qLon, float a, size_t k, float maxDist) {
+void RoadNetwork::updateCP(CP& cp, oPtr& o, uint32_t qLat, uint32_t qLon, float a, size_t k, float maxDist, float threshold) {
     std::vector<std::pair<std::pair<oPtr, float>, size_t> > v;
     float t1 = 0;
     float t2 = 0;
 
     //std::cout << "updateCP" << std::endl;
-    std::sort(cp.begin(), cp.end(), [](auto a, auto b){
-        return a.second >b.second;
-    });
+    //std::sort(cp.begin(), cp.end(), [](auto a, auto b){
+    //    return a.second >b.second;
+    //});
     
     //for(auto p : cp) 
     //    std::cout << p.second << ", ";
     //std::cout << std::endl;
 
-    float threshold = cp[k-1].second;
+    //float threshold = cp[k-1].second;
     //std::cout << "threshold: " << threshold << ", ";
 
     for(auto it=cp.begin(); it!=cp.end(); ++it) {
@@ -190,12 +201,13 @@ void RoadNetwork::updateCP(CP& cp, oPtr o, uint32_t qLat, uint32_t qLon, float a
     }
     
     if(v.empty()) {
-        //std::cout << "o' empty" << std::endl;
+        std::cout << "o' empty" << std::endl;
         cp.push_back(std::make_pair(std::make_pair(o, oPtr()), 0.0));
+        std::cout << "return" << std::endl;
         return;   
     }
 
-    //std::cout << "get o': " << v.size() << std::endl;
+    std::cout << "get o': " << v.size() << std::endl;
     //for(auto p : v) 
     //    std::cout << p.first.first->getLat() << ", " << p.first.first->getLon() << std::endl;
 
@@ -215,7 +227,7 @@ void RoadNetwork::updateCP(CP& cp, oPtr o, uint32_t qLat, uint32_t qLon, float a
         cp.push_back(std::make_pair(std::make_pair(o2.first.first, o), o2.first.second));
         cp.push_back(std::make_pair(std::make_pair(cp[k-1].first.first, oPtr()), 0.0));
         cp.push_back(std::make_pair(std::make_pair(cp[k-1].first.second, oPtr()), 0.0));
-        cp.erase(cp.begin()+k-2);
+        cp.erase(cp.begin()+k-1);
         return;
     }
     else {
@@ -230,9 +242,17 @@ void RoadNetwork::updateCP(CP& cp, oPtr o, uint32_t qLat, uint32_t qLon, float a
 
         oPtr tmp = (*cp[o2.second].first.first != *o2.first.first)? cp[o2.second].first.first : cp[o2.second].first.second;
 
-        cp.erase(cp.begin()+o2.second-1);
+        cp.erase(cp.begin()+o2.second);
 
-        updateCP(cp, tmp, qLat, qLon, a, k, maxDist);
+        std::sort(cp.begin(), cp.end(), [](auto a, auto b){
+            return a.second >b.second;
+        });
+
+        std::cout << "sort and recursive call" << std::endl;
+
+        updateCP(cp, tmp, qLat, qLon, a, k, maxDist, cp[k-1].second);
+        std::cout << "finished recursive call" << std::endl;
+        return;
     }
 }
 
@@ -241,11 +261,11 @@ void RoadNetwork::Sksearch(uint32_t qLat, uint32_t qLon, float a, size_t k, floa
     std::vector<oPtr> candidates = searchCandidates(qLat, qLon,
                                                     terms,
                                                     maxDist);
-    //float threshold = 0;
+    float threshold = 0;
     oPtr tmp = NULL;
 
     std::sort(candidates.begin(), candidates.end(), [&qLat, &qLon](const oPtr& o1, const oPtr& o2) {
-       return o1->dist2Obj(qLat, qLon) < o2->dist2Obj(qLat, qLon);
+        return o1->dist2Obj(qLat, qLon) < o2->dist2Obj(qLat, qLon);
     });
 
     for(oPtr o : candidates) {
@@ -264,8 +284,57 @@ void RoadNetwork::Sksearch(uint32_t qLat, uint32_t qLon, float a, size_t k, floa
 
             continue;
         } 
+
+
+        std::cout << std::endl;
+        std::cout << "updateCP() start: " << threshold << std::endl;
+        updateCP(cp, o, qLat, qLon, a, k, maxDist, threshold);
+        std::cout << "updateCP() returned" << std::endl;
+
+        std::sort(cp.begin(), cp.end(), [](auto a, auto b){
+            return a.second >b.second;
+        });
+
+        std::cout << "core pairs => " << std::endl;
+        for(auto it=cp.begin(); it!=cp.begin()+k; ++it) {
+            //std::cout << "(" << it->first.first->getLat() << ", "
+            //          << it->first.first->getLon() << "), " << "("
+            //          << it->first.second->getLat() << ", " 
+            //          << it->first.second->getLon() << ") : "
+            //          << it->first.first->dist2Obj(*it->first.second) << std::endl;
+
+            std::cout << "(" << it->first.first->getId() << ", "
+                      << it->first.second->getId() << ") : "
+                      << it->first.first->dist2Obj(*it->first.second) << std::endl;
+        }
+        std::cout << std::endl;
+
+
+        threshold = cp[k-1].second;
+        float dist2q = o->dist2Obj(qLat, qLon);
         
-        updateCP(cp, o, qLat, qLon, a, k, maxDist);
+        if(computDiversifyDist(dist2q, dist2q, 2.0*maxDist, a, maxDist) < threshold) {
+            bool terminate = 1;
+            for(auto p : cp) {
+                float tmp = computDiversifyDist(dist2q, p.first.first->dist2Obj(qLat,qLon), 2.0*dist2q, a, maxDist);
+                if(tmp>threshold) {
+                    terminate = 0;
+                    break;
+                }
+
+                if(p.first.second != NULL) {
+                    tmp = computDiversifyDist(dist2q, p.first.second->dist2Obj(qLat,qLon), 2.0*dist2q, a, maxDist);
+                    if(tmp>threshold) {    
+                        terminate = 0;
+                        break;
+                    }
+                }
+            } 
+            if(terminate) {
+                std::cout << "terminate expansion!" << std::endl;
+                break;
+            }
+        }
     }
 
 
@@ -274,8 +343,8 @@ void RoadNetwork::Sksearch(uint32_t qLat, uint32_t qLon, float a, size_t k, floa
         std::cout << "(" << it->first.first->getLat() << ", "
                   << it->first.first->getLon() << "), " << "("
                   << it->first.second->getLat() << ", " 
-                  << it->first.second->getLon() << ")"
-                  << std::endl;
+                  << it->first.second->getLon() << ") : "
+                  << it->first.first->dist2Obj(*it->first.second) << std::endl;
     }
 }
 
@@ -428,8 +497,8 @@ void RoadNetwork::buildNetwork(std::string coFile,
     //}
 
     //searchCandidates(33025158,114523370, std::vector<uint32_t>{3, 117}, 1000);
-    //Sksearch(33025158,114523370, 0.7, 3, 2000, std::vector<uint32_t>{3, 117});
-    Sksearch(33762794, 117912835, 0.7, 3, 2000, std::vector<uint32_t>{3, 117});
+    Sksearch(33025158,114523370, 0.1, 3, 2000, std::vector<uint32_t>{3, 117});
+    //Sksearch(37439384, 122051350, 0.1, 2, 50, std::vector<uint32_t>{11});
 }
 
 //RoadNetwork::nPtr RoadNetwork::binarySearch(uint64_t zOrder) {
@@ -451,6 +520,14 @@ float RoadNetwork::computDiversifyDist(uint32_t qLat, uint32_t qLon, oPtr o1, oP
                      - o2->dist2Obj(qLat, qLon)/maxDist;
 
     float tmp2 = (1-a)*(o1->dist2Obj(*o2))/maxDist;
+    
+    return a*tmp1+tmp2;
+}
+
+float RoadNetwork::computDiversifyDist(float dist_q_u, float dist_q_v,  float dist_u_v, float a, uint32_t maxDist) const {
+    float tmp1 = 2.0 - (dist_q_u+dist_q_v)/maxDist;
+
+    float tmp2 = (1-a)*dist_u_v/maxDist;
     
     return a*tmp1+tmp2;
 }

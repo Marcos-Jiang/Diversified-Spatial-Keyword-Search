@@ -30,8 +30,13 @@ int main() {
     //    std::cout << std::endl;
     //}
 
+    //r->buildNetwork("../dataset/Bay/BayRoadNetWork.co",
+    //                "../dataset/Bay/BayRoadNetWork.gr",
+    //                "../dataset/Bay/BayToken");
+
     r->buildNetwork("../dataset/Ca/CaRoadNetWork.co",
                     "../dataset/Ca/CaRoadNetWork.gr",
                     "../dataset/Ca/CaToken");
+
 
 }

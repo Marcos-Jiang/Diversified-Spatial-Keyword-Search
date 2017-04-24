@@ -56,7 +56,7 @@ public:
 
 
     std::vector<oPtr> searchCandidates(uint32_t lat, uint32_t lon, std::vector<uint32_t>& terms, const float& maxDist);
-    void updateCP(CP& cp, oPtr o, uint32_t qLat, uint32_t qLon, float a, size_t k, float maxDist);
+    void updateCP(CP& cp, oPtr& o, uint32_t qLat, uint32_t qLon, float a, size_t k, float maxDist, float threshold);
     //void Sksearch(uint32_t qLat, uint32_t qLon, float a, size_t k, float maxDist);
     void Sksearch(uint32_t qLat, uint32_t qLon, float a, size_t k, float maxDist, std::vector<uint32_t> terms);
     //void qurey(uint32_t lat, uint32_t lon, std::vector<uint32_t> terms);
@@ -77,8 +77,13 @@ private:
         _nodes.query(bgi::nearest(p, 1), std::back_inserter(result));
         return result[0].second;
     };
+
     float computDiversifyDist(uint32_t qLat, uint32_t qLon,
                                 oPtr o1, oPtr o2, float a,
+                                uint32_t maxDist) const;
+
+    float computDiversifyDist(float dist_q_u, float dist_q_v,
+                                float dist_u_v, float a,
                                 uint32_t maxDist) const;
 
     const uint64_t computZorder(uint32_t lat, uint32_t lon) const;
